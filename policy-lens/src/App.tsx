@@ -3,7 +3,7 @@ import PolicyInput from "./components/PolicyInput";
 import { normalizeText } from "./utilities/normalize";
 import { chunkText } from "./utilities/chucks";
 import "./App.css";
-import { detectArbitration} from "./utilities/detect";
+import { detectAll} from "./utilities/detect";
 import type { Flag } from "./utilities/detect";
 
 function App() {
@@ -20,7 +20,7 @@ function App() {
   setLastReceivedText(normalized);
   setChunks(chunked);
 
-  const found = detectArbitration(chunked);
+  const found = detectAll(chunked);
   setFlags(found);
 }
 function handleClear() {
