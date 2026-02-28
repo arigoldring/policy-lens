@@ -3,21 +3,31 @@ import PolicyInput from "./components/PolicyInput";
 import { normalizeText } from "./utilities/normalize";
 import { chunkText } from "./utilities/chucks";
 import "./App.css";
+import { detectArbitration} from "./utilities/detect";
+import type { Flag } from "./utilities/detect";
 
 function App() {
   const [lastReceivedText, setLastReceivedText] = useState<string>("");
   const [chunks, setChunks] = useState<string[]>([]);
+  const [flags, setFlags] = useState<Flag[]>([]);
+  const [hasAnalyzed, setHasAnalyzed] = useState(false);
 
   function handleAnalyze(text: string) {
-    const normalized = normalizeText(text);
-    const chunked = chunkText(normalized);
+  const normalized = normalizeText(text);
+  const chunked = chunkText(normalized);
+  setHasAnalyzed(true);
 
-    setLastReceivedText(normalized);
-    setChunks(chunked);
-  }
+  setLastReceivedText(normalized);
+  setChunks(chunked);
+
+  const found = detectArbitration(chunked);
+  setFlags(found);
+}
 function handleClear() {
   setLastReceivedText("");
   setChunks([]);
+  setFlags([]);
+  setHasAnalyzed(false);
 }
   return (
     <div className="container">
@@ -57,7 +67,24 @@ function handleClear() {
           </div>
         ))}
       </div>
+      <div className="section">
+  <h2>Detection Check</h2>
+  <p>Flags found: {flags.length}</p>
+
+  {hasAnalyzed && flags.length === 0 && (
+  <p>✅ No arbitration-related clauses detected...</p>
+)}
+
+  {flags.map((flag, idx) => (
+    <div key={idx} className="section">
+      <strong>{flag.category}</strong>
+      <div>Found in chunk #{flag.chunkIndex + 1}</div>
+      <pre className="preview-box">{flag.snippet}</pre>
     </div>
+  ))}
+</div>
+</div>
+    
   );
 }
 
