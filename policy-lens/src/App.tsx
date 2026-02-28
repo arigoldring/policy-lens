@@ -15,12 +15,15 @@ function App() {
     setLastReceivedText(normalized);
     setChunks(chunked);
   }
-
+function handleClear() {
+  setLastReceivedText("");
+  setChunks([]);
+}
   return (
     <div className="container">
       <h1>PolicyLens</h1>
 
-      <PolicyInput onAnalyze={handleAnalyze} />
+      <PolicyInput onAnalyze={handleAnalyze} onClear={handleClear} />
 
       <div className="section">
         <h2>Read Check</h2>

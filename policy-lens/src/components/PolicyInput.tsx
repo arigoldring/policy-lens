@@ -3,9 +3,10 @@ import React, { useRef, useState } from "react";
 
 interface PolicyInputProps {
   onAnalyze: (text: string) => void;
+  onClear: () => void;
 }
 
-export default function PolicyInput({ onAnalyze }: PolicyInputProps) {
+export default function PolicyInput({ onAnalyze, onClear }: PolicyInputProps) {
   const [text, setText] = useState<string>("");
   const [filename, setFilename] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -49,11 +50,9 @@ export default function PolicyInput({ onAnalyze }: PolicyInputProps) {
     // Clear the file input element so same file can be re-uploaded
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
-      /**
-       * Note: setting `value = ""` is the usual way to clear an uncontrolled file input.
-       * We don't call setFile or similar because we didn't store the File in state.
-       */
     }
+    onClear();
+    
   }
 
   return (
