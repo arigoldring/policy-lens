@@ -46,6 +46,7 @@ function App() {
     setChunks([]);
     setFlags([]);
     setHasAnalyzed(false);
+    setSelected([]);
   }
 
   return (
