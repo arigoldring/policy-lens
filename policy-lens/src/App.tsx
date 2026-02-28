@@ -1,12 +1,14 @@
 import { useState } from "react";
 import PolicyInput from "./components/PolicyInput";
+import { normalizeText } from "./utilities/normalize";
 
 function App() {
   const [lastReceivedText, setLastReceivedText] = useState<string>("");
 
   function handleAnalyze(text: string) {
-    setLastReceivedText(text);
-  }
+  const normalized = normalizeText(text);
+  setLastReceivedText(normalized);
+}
 
   return (
     <div>
