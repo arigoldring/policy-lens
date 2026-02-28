@@ -2,12 +2,11 @@
 import React, { useRef, useState } from "react";
 
 interface PolicyInputProps {
-  onAnalyze: (text: string) => void;
-  onClear: () => void;
+  text: string;
+  onTextChange: (text: string) => void;
 }
 
-export default function PolicyInput({ onAnalyze, onClear }: PolicyInputProps) {
-  const [text, setText] = useState<string>("");
+export default function PolicyInput({ text, onTextChange }: PolicyInputProps) {
   const [filename, setFilename] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -15,10 +14,8 @@ export default function PolicyInput({ onAnalyze, onClear }: PolicyInputProps) {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Basic file-type guard
     if (!file.name.toLowerCase().endsWith(".txt")) {
       alert("Please upload a .txt file.");
-      // clear the file input so user can try again
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
@@ -27,92 +24,41 @@ export default function PolicyInput({ onAnalyze, onClear }: PolicyInputProps) {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      const fileText = e.target?.result as string;
-      setText(fileText ?? "");
+      const fileText = (e.target?.result as string) ?? "";
+      onTextChange(fileText);
     };
     reader.onerror = () => {
       alert("Error reading file.");
-      setText("");
       setFilename(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
+      onTextChange("");
     };
 
     reader.readAsText(file);
   }
 
-  function handleClear() {
-    // Clear textarea state
-    setText("");
-
-    // Clear filename state
-    setFilename(null);
-
-    // Clear the file input element so same file can be re-uploaded
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-    onClear();
-    
-  }
-
   return (
-    <div style={containerStyle}>
+    <div className="input-card">
       <h2>Paste Terms & Conditions</h2>
 
-      {/* File Upload */}
-      <div style={{ marginBottom: 8 }}>
+      <div className="file-row">
         <input
           ref={fileInputRef}
           type="file"
           accept=".txt"
           onChange={handleFileUpload}
         />
-        {filename && (
-          <span style={{ marginLeft: 12, fontStyle: "italic" }}>
-            Loaded: {filename}
-          </span>
-        )}
+        {filename && <span className="filename">Loaded: {filename}</span>}
       </div>
 
-      {/* Text Area */}
       <textarea
+        className="textarea"
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => onTextChange(e.target.value)}
         placeholder="Paste Terms & Conditions here..."
-        style={textareaStyle}
       />
 
-      {/* Character Count */}
       <p>{text.length} characters</p>
-
-      {/* Buttons */}
-      <div style={{ marginTop: 10 }}>
-        <button
-          onClick={() => onAnalyze(text)}
-          disabled={text.trim().length === 0}
-        >
-          Analyze Policy
-        </button>
-
-        <button onClick={handleClear} style={{ marginLeft: 10 }}>
-          Clear
-        </button>
-      </div>
     </div>
   );
 }
-
-const containerStyle: React.CSSProperties = {
-  maxWidth: "800px",
-  margin: "0 auto",
-  padding: "20px",
-};
-
-const textareaStyle: React.CSSProperties = {
-  width: "100%",
-  height: "250px",
-  marginTop: "10px",
-  padding: "10px",
-  fontSize: "14px",
-  resize: "vertical",
-};

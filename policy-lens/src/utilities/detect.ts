@@ -166,6 +166,32 @@ export function detectTracking(chunks: string[]): Flag[] {
 
   return flags;
 }
+
+export type DetectorKey =
+  | "arbitration"
+  | "dataSharing"
+  | "dataRetention"
+  | "unilateralChanges"
+  | "liability"
+  | "tracking";
+
+export const detectorLabels: Record<DetectorKey, string> = {
+  arbitration: "Arbitration / Class Action Waiver",
+  dataSharing: "Data Sharing / Personal Information",
+  dataRetention: "Data Retention / Deletion",
+  unilateralChanges: "Unilateral Changes",
+  liability: "Liability Waiver / Disclaimer",
+  tracking: "Tracking / Cookies / Advertising",
+};
+
+export const detectors: Record<DetectorKey, (chunks: string[]) => Flag[]> = {
+  arbitration: detectArbitration,
+  dataSharing: detectDataSharing,
+  dataRetention: detectDataRetention,
+  unilateralChanges: detectUnilateralChanges,
+  liability: detectLiabilityWaiver,
+  tracking: detectTracking,
+};
 export function detectAll(chunks: string[]): Flag[] {
   return [
     ...detectArbitration(chunks),
