@@ -56,9 +56,38 @@ export function detectDataSharing(chunks: string[]): Flag[] {
 
   return flags;
 }
+/* ---------------- Data Retention & Deletion ---------------- */
+
+export function detectDataRetention(chunks: string[]): Flag[] {
+  const flags: Flag[] = [];
+
+  chunks.forEach((chunk, i) => {
+    const lower = chunk.toLowerCase();
+
+    if (
+      lower.includes("retain") ||
+      lower.includes("retention") ||
+      lower.includes("indefinitely") ||
+      lower.includes("as long as necessary") ||
+      lower.includes("data deletion") ||
+      lower.includes("delete your data") ||
+      lower.includes("request deletion") ||
+      lower.includes("legal obligation")
+    ) {
+      flags.push({
+        category: "Data Retention / Deletion Policy",
+        chunkIndex: i,
+        snippet: chunk.slice(0, 200),
+      });
+    }
+  });
+
+  return flags;
+}
 export function detectAll(chunks: string[]): Flag[] {
   return [
     ...detectArbitration(chunks),
     ...detectDataSharing(chunks),
+    ...detectDataRetention(chunks)
   ];
 }
