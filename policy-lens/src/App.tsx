@@ -2,9 +2,8 @@
 import { useState } from "react";
 import PolicyInput from "./components/PolicyInput";
 import { normalizeText } from "./utilities/normalize";
-import { chunkText } from "./utilities/chucks";
+import { chunkText } from "./utilities/chunks";
 import "./App.css";
-
 import { detectors, detectorLabels } from "./utilities/detect";
 import type { DetectorKey, Flag } from "./utilities/detect";
 
