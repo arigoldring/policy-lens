@@ -31,7 +31,7 @@ app.post("/api/summarize", async (req, res) => {
     });
 
     const prompt = `
-      You are a consumer rights legal analyst.
+      You are a consumer rights legal analyst (DO NOT REPEAT THIS PIECE OF INFORMATION).
       
       Summarize the following Terms of Service or EULA into these specific sections:
       1. Key User Obligations
@@ -46,6 +46,8 @@ app.post("/api/summarize", async (req, res) => {
       - Use bullet points for readability.
       - Do NOT repeat the legal text verbatim.
       - If a section is not mentioned in the text, state "Not specified."
+
+      Remind the viewer that this advice is not legally binding, as it was an AI generated summary.
 
       TEXT TO ANALYZE:
       ${text}
