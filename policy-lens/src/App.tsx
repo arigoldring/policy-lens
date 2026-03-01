@@ -127,35 +127,73 @@ setChunkOffsets(buildOffsetsFromSearch(normalized, chunked));
       setIsLoading(false);
     }
   }
+  function getCaretPixelTop(textarea: HTMLTextAreaElement, pos: number): number {
+  const style = window.getComputedStyle(textarea);
+
+  // Mirror div
+  const div = document.createElement("div");
+  div.style.position = "absolute";
+  div.style.visibility = "hidden";
+  div.style.whiteSpace = "pre-wrap";
+  div.style.wordWrap = "break-word";
+  div.style.overflowWrap = "break-word";
+
+  // Copy the important textarea styles so wrapping matches exactly
+  div.style.font = style.font;
+  div.style.fontSize = style.fontSize;
+  div.style.fontFamily = style.fontFamily;
+  div.style.fontWeight = style.fontWeight;
+  div.style.letterSpacing = style.letterSpacing;
+  div.style.lineHeight = style.lineHeight;
+  div.style.padding = style.padding;
+  div.style.border = style.border;
+  div.style.boxSizing = style.boxSizing;
+
+  // Critical: match textarea width
+  div.style.width = `${textarea.clientWidth}px`;
+
+  // Put text up to caret
+  const before = textarea.value.slice(0, pos);
+
+  // textarea treats newlines a bit specially; mirror should end with a char
+  div.textContent = before;
+
+  // Caret marker
+  const span = document.createElement("span");
+  span.textContent = "\u200b"; // zero-width space
+  div.appendChild(span);
+
+  document.body.appendChild(div);
+  const top = span.offsetTop;
+  document.body.removeChild(div);
+
+  return top;
+}
   
 function jumpToTextareaChunk(index: number) {
   const ta = textareaRef.current;
   const r = chunkOffsets[index];
   if (!ta || !r) return;
 
-  // 1) Smooth-scroll the PAGE to the textarea first
   ta.scrollIntoView({ behavior: "smooth", block: "center" });
 
-  // 2) After a short delay, focus + select (prevents snap)
   window.setTimeout(() => {
-    ta.focus({ preventScroll: true }); // key: stops the focus from snapping
+    ta.focus({ preventScroll: true });
     ta.setSelectionRange(r.start, r.end);
 
-    // 3) Scroll INSIDE the textarea to the approximate spot (smoothly)
     requestAnimationFrame(() => {
-      const ratio = r.start / Math.max(1, ta.value.length);
-      const maxScroll = ta.scrollHeight - ta.clientHeight;
+      const caretTop = getCaretPixelTop(ta, r.start);
 
-      ta.scrollTo({
-        top: Math.max(0, Math.min(maxScroll, ratio * maxScroll)),
-        behavior: "smooth",
-      });
+      // Scroll so caret is a little below the top (nice feel)
+      const padding = 24;
+      const targetTop = Math.max(0, caretTop - padding);
 
-      // 4) Tiny visual feedback
+      ta.scrollTo({ top: targetTop, behavior: "smooth" });
+
       ta.classList.add("ring-4", "ring-indigo-500/20");
       setTimeout(() => ta.classList.remove("ring-4", "ring-indigo-500/20"), 400);
     });
-  }, 250); // tweak: 200–400ms depending on how it feels
+  }, 250);
 }
 
   function handleClear() {
