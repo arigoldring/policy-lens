@@ -163,7 +163,7 @@ function jumpToTextareaChunk(index: number) {
             <h1 className="text-[3.2rem] font-extrabold text-indigo-500 tracking-[-0.05em] drop-shadow-[0_10px_20px_rgba(99,102,241,0.2)]">
               PolicyLens
             </h1>
-            <p className="text-slate-600">Personalized Legal Analyst</p>
+            <p className="text-slate-600">Policy Insight Assistant</p>
           </header>
 
           <main className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-8 items-stretch">
