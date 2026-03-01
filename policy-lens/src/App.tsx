@@ -42,6 +42,8 @@ function App() {
   const [currentText, setCurrentText] = useState("");
   const [userContext, setUserContext] = useState("");
   const [lastReceivedText, setLastReceivedText] = useState("");
+  const abortRef = useRef<AbortController | null>(null);
+  const controller = new AbortController();
   
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [chunks, setChunks] = useState<string[]>([]);
@@ -87,7 +89,7 @@ function App() {
 setChunkOffsets(buildOffsetsFromSearch(currentText, chunked));
 setLastReceivedText(currentText);
       
-
+      abortRef.current?.abort();
       const keysToScan = selected.length > 0 ? selected : allKeys;
       const found: Flag[] = keysToScan.flatMap((k) => detectors[k](chunked));
       setFlags(found);
@@ -108,10 +110,11 @@ setLastReceivedText(currentText);
           : orderedIdxs.map((i) => `Segment ${i + 1}\n${chunked[i]}`).join("\n\n---\n\n");
 
       const response = await fetch("http://localhost:3001/api/summarize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: aiText, context: userContext }),
-      });
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ text: aiText, context: userContext }),
+  signal: controller.signal
+});
 
       if (!response.ok) throw new Error("Could not connect to the AI server.");
 
