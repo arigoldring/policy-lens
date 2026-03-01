@@ -24,7 +24,7 @@ app.post("/api/summarize", async (req, res) => {
       model: "gemini-3-flash-preview", // Updated to the stable Flash model identifier
       generationConfig: {
         temperature: 0.3, 
-        maxOutputTokens: 9000, // Slightly higher to accommodate the extra section
+        maxOutputTokens: 15000, // Slightly higher to accommodate the extra section
       },
     });
 
