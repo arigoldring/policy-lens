@@ -124,7 +124,7 @@ const aiText =
           </section>
 
           {/* Section 2: Scan Settings */}
-          <section className="section">
+          <section className="section scan-settings">
             <h2>Scan Settings</h2>
             <div className="detector-grid">
               {allKeys.map((key) => (
@@ -159,7 +159,7 @@ const aiText =
           )}
 
           {/* Section 4: Flagged Results */}
-          <section className="section">
+          <section className="section flags-section">
             <h2>Detected Clauses ({flags.length})</h2>
             {!hasAnalyzed && <p className="muted text-center">Upload a policy to see specific legal flags.</p>}
             {hasAnalyzed && flags.length === 0 && <p className="text-center">✅ No selected issues detected.</p>}

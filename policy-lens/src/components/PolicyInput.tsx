@@ -69,7 +69,7 @@ export default function PolicyInput({
         value={text}
         onChange={(e) => onTextChange(e.target.value)}
         placeholder="Paste Terms & Conditions or EULA here..."
-        style={{ marginBottom: '15px' }}
+        style={{ marginBottom: '15px',color: "black" }}
       />
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
@@ -87,13 +87,16 @@ export default function PolicyInput({
 }
 
 const contextInputStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '12px',
-  borderRadius: '8px',
-  border: '1px solid #e2e8f0',
-  fontSize: '0.95rem',
-  fontFamily: 'inherit',
-  boxSizing: 'border-box'
+  width: "100%",
+  padding: "14px 16px",
+  borderRadius: "16px",
+  border: "1px solid #e2e8f0",
+  fontSize: "0.95rem",
+  fontFamily: "Inter, -apple-system, sans-serif",
+  boxSizing: "border-box",
+  background: "rgba(248, 250, 252, 0.7)",
+  outline: "none",
+  color: '#0f172a',
 };
 
 const fileLabelStyle: React.CSSProperties = {
