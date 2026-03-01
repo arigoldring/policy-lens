@@ -1,8 +1,6 @@
-// src/App.tsx
 import { useState } from "react";
 import PolicyInput from "./components/PolicyInput";
 import { normalizeText } from "./utilities/normalize";
-import { chunkText } from "./utilities/chunks";
 import { chunkText } from "./utilities/chunks";
 import { detectors, detectorLabels } from "./utilities/detect";
 import type { DetectorKey, Flag } from "./utilities/detect";
@@ -10,8 +8,11 @@ import { testGemini } from "./utilities/ai";
 import "./App.css";
 
 function App() {
-  // --- Analysis State ---
+  // --- Text State ---
+  const [currentText, setCurrentText] = useState<string>("");
   const [lastReceivedText, setLastReceivedText] = useState<string>("");
+  
+  // --- Analysis State ---
   const [chunks, setChunks] = useState<string[]>([]);
   const [flags, setFlags] = useState<Flag[]>([]);
   const [hasAnalyzed, setHasAnalyzed] = useState<boolean>(false);
@@ -25,9 +26,8 @@ function App() {
   const allKeys = Object.keys(detectors) as DetectorKey[];
   const [selected, setSelected] = useState<DetectorKey[]>([]);
 
-  // --- Logic ---
-  async function handleAnalyze(rawText: string) {
-    if (!rawText.trim()) return;
+  async function handleAnalyze() {
+    if (!currentText.trim()) return;
 
     try {
       setError("");
@@ -35,7 +35,7 @@ function App() {
       setIsLoading(true);
       setHasAnalyzed(true);
 
-      const normalized = normalizeText(rawText);
+      const normalized = normalizeText(currentText);
       const chunked = chunkText(normalized);
 
       setLastReceivedText(normalized);
@@ -57,9 +57,7 @@ function App() {
       setSummary(data.summary || "No summary was returned.");
 
     } catch (err: unknown) {
-      // FIX: Replace 'any' with a type guard
       console.error("Analysis Error:", err);
-      
       if (err instanceof Error) {
         setError(err.message);
       } else {
@@ -71,6 +69,7 @@ function App() {
   }
 
   function handleClear() {
+    setCurrentText("");
     setLastReceivedText("");
     setChunks([]);
     setFlags([]);
@@ -87,8 +86,11 @@ function App() {
         <p>Consumer Rights Legal Analyst (Gemini 3 Power)</p>
       </header>
 
+      {/* Synchronized Props */}
       <PolicyInput 
-        onAnalyze={handleAnalyze} 
+        text={currentText} 
+        onTextChange={setCurrentText} 
+        onAnalyze={handleAnalyze}
         onClear={handleClear} 
       />
 
@@ -123,7 +125,6 @@ function App() {
         )}
       </div>
 
-      {/* Chunk check */}
       <div className="section">
         <h2>Detected Clauses ({flags.length})</h2>
         {!hasAnalyzed && <p className="muted">Upload a policy to see specific legal flags.</p>}

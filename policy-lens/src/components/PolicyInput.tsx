@@ -3,9 +3,11 @@ import React, { useRef, useState } from "react";
 interface PolicyInputProps {
   text: string;
   onTextChange: (text: string) => void;
+  onAnalyze: () => void;
+  onClear: () => void;
 }
 
-export default function PolicyInput({ text, onTextChange }: PolicyInputProps) {
+export default function PolicyInput({ text, onTextChange, onAnalyze, onClear }: PolicyInputProps) {
   const [filename, setFilename] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -29,7 +31,6 @@ export default function PolicyInput({ text, onTextChange }: PolicyInputProps) {
   }
 
   function handleClear() {
-    setText("");
     setFilename(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
     onClear();
@@ -47,7 +48,7 @@ export default function PolicyInput({ text, onTextChange }: PolicyInputProps) {
             type="file"
             accept=".txt"
             onChange={handleFileUpload}
-            style={{ display: 'none' }} // Hide the ugly default button
+            style={{ display: 'none' }}
           />
         </label>
         {filename && <span style={filenameStyle}>📄 {filename}</span>}
@@ -58,6 +59,7 @@ export default function PolicyInput({ text, onTextChange }: PolicyInputProps) {
         value={text}
         onChange={(e) => onTextChange(e.target.value)}
         placeholder="Paste Terms & Conditions here..."
+        style={textareaStyle}
       />
 
       <div style={footerStyle}>
@@ -68,11 +70,15 @@ export default function PolicyInput({ text, onTextChange }: PolicyInputProps) {
           </button>
           <button
             className="primary-button"
-            onClick={() => onAnalyze(text)}
+            onClick={onAnalyze}
             disabled={text.trim().length === 0}
             style={{ 
               backgroundColor: text.trim().length > 0 ? '#4a90e2' : '#ccc',
-              color: 'white' 
+              color: 'white',
+              padding: '8px 16px',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: text.trim().length > 0 ? 'pointer' : 'default'
             }}
           >
             Analyze Policy
@@ -84,7 +90,6 @@ export default function PolicyInput({ text, onTextChange }: PolicyInputProps) {
 }
 
 // --- Styles ---
-
 const containerStyle: React.CSSProperties = {
   maxWidth: "800px",
   margin: "0 auto",
