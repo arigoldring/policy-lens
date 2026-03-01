@@ -82,12 +82,10 @@ function App() {
       setIsLoading(true);
       setHasAnalyzed(true);
 
-      const normalized = normalizeText(currentText);
-const chunked = chunkText(normalized);
+      const chunked = chunkText(currentText);
 
-setChunks(chunked);
-setChunkOffsets(buildOffsetsFromSearch(normalized, chunked));
-      setLastReceivedText(normalized);
+setChunkOffsets(buildOffsetsFromSearch(currentText, chunked));
+setLastReceivedText(currentText);
       
 
       const keysToScan = selected.length > 0 ? selected : allKeys;
@@ -106,7 +104,7 @@ setChunkOffsets(buildOffsetsFromSearch(normalized, chunked));
 
       const aiText =
         orderedIdxs.length === 0
-          ? normalized
+          ? currentText
           : orderedIdxs.map((i) => `Segment ${i + 1}\n${chunked[i]}`).join("\n\n---\n\n");
 
       const response = await fetch("http://localhost:3001/api/summarize", {
@@ -226,7 +224,10 @@ function jumpToTextareaChunk(index: number) {
   <section className="w-full flex flex-col gap-6">
     <PolicyInput
       text={currentText}
-      onTextChange={setCurrentText}
+      onTextChange={(raw) => {
+    const normalized = normalizeText(raw);
+    setCurrentText(normalized);
+      }}
       context={userContext}
       onContextChange={setUserContext}
       onAnalyze={handleAnalyze}
