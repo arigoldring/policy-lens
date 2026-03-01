@@ -24,7 +24,7 @@ function App() {
   const [error, setError] = useState<string>("");
 
   const allKeys = Object.keys(detectors) as DetectorKey[];
-  const [selected, setSelected] = useState<DetectorKey[]>([]);
+  const [selected, setSelected] = useState<DetectorKey[]>(allKeys);
 
   async function handleAnalyze() {
     if (!currentText.trim()) return;
