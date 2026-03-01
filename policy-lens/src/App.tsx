@@ -116,19 +116,29 @@ function jumpToTextareaChunk(index: number) {
   const r = chunkOffsets[index];
   if (!ta || !r) return;
 
-  ta.focus();
-  ta.setSelectionRange(r.start, r.end);
+  // 1) Smooth-scroll the PAGE to the textarea first
+  ta.scrollIntoView({ behavior: "smooth", block: "center" });
 
-  // Better scroll: use ratio of text position to scrollHeight
-  requestAnimationFrame(() => {
-    const ratio = r.start / Math.max(1, ta.value.length);
-    const maxScroll = ta.scrollHeight - ta.clientHeight;
-    ta.scrollTop = Math.max(0, Math.min(maxScroll, ratio * maxScroll));
+  // 2) After a short delay, focus + select (prevents snap)
+  window.setTimeout(() => {
+    ta.focus({ preventScroll: true }); // key: stops the focus from snapping
+    ta.setSelectionRange(r.start, r.end);
 
-    // quick highlight feedback (optional)
-    ta.classList.add("ring-4", "ring-indigo-500/20");
-    setTimeout(() => ta.classList.remove("ring-4", "ring-indigo-500/20"), 350);
-  });
+    // 3) Scroll INSIDE the textarea to the approximate spot (smoothly)
+    requestAnimationFrame(() => {
+      const ratio = r.start / Math.max(1, ta.value.length);
+      const maxScroll = ta.scrollHeight - ta.clientHeight;
+
+      ta.scrollTo({
+        top: Math.max(0, Math.min(maxScroll, ratio * maxScroll)),
+        behavior: "smooth",
+      });
+
+      // 4) Tiny visual feedback
+      ta.classList.add("ring-4", "ring-indigo-500/20");
+      setTimeout(() => ta.classList.remove("ring-4", "ring-indigo-500/20"), 400);
+    });
+  }, 250); // tweak: 200–400ms depending on how it feels
 }
 
   function handleClear() {
@@ -156,7 +166,7 @@ function jumpToTextareaChunk(index: number) {
             <p className="text-slate-600">Personalized Legal Analyst</p>
           </header>
 
-          <main className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-8 items-start">
+          <main className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-8 items-stretch">
   {/* LEFT column */}
   <section className="w-full">
   <PolicyInput
@@ -222,7 +232,7 @@ function jumpToTextareaChunk(index: number) {
         <p className="text-center">✅ No selected issues detected.</p>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
         {flags.map((flag, idx) => (
           <div
   key={idx}
