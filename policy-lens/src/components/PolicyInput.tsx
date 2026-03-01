@@ -7,6 +7,7 @@ interface PolicyInputProps {
   onContextChange: (context: string) => void;
   onAnalyze: () => void;
   onClear: () => void;
+  textareaRef?: React.RefObject<HTMLTextAreaElement | null>;
 }
 
 export default function PolicyInput({
@@ -16,9 +17,11 @@ export default function PolicyInput({
   onContextChange,
   onAnalyze,
   onClear,
+  textareaRef,
 }: PolicyInputProps) {
   const [filename, setFilename] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  
 
   function handleFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -73,6 +76,7 @@ export default function PolicyInput({
 
       {/* Textarea */}
       <textarea
+        ref={textareaRef}
         value={text}
         onChange={(e) => onTextChange(e.target.value)}
         placeholder="Paste Terms & Conditions or EULA here..."
