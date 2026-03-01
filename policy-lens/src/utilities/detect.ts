@@ -56,34 +56,7 @@ export function detectDataSharing(chunks: string[]): Flag[] {
 
   return flags;
 }
-/* ---------------- Data Retention & Deletion ---------------- */
 
-export function detectDataRetention(chunks: string[]): Flag[] {
-  const flags: Flag[] = [];
-
-  chunks.forEach((chunk, i) => {
-    const lower = chunk.toLowerCase();
-
-    if (
-      lower.includes("retain") ||
-      lower.includes("retention") ||
-      lower.includes("indefinitely") ||
-      lower.includes("as long as necessary") ||
-      lower.includes("data deletion") ||
-      lower.includes("delete your data") ||
-      lower.includes("request deletion") ||
-      lower.includes("legal obligation")
-    ) {
-      flags.push({
-        category: "Data Retention / Deletion Policy",
-        chunkIndex: i,
-        snippet: chunk.slice(0, 200),
-      });
-    }
-  });
-
-  return flags;
-}
 
 export function detectUnilateralChanges(chunks: string[]): Flag[] {
   const flags: Flag[] = [];
@@ -138,15 +111,16 @@ export function detectLiabilityWaiver(chunks: string[]): Flag[] {
 
   return flags;
 }
-/* ---------------- Tracking & Cookies ---------------- */
 
-export function detectTracking(chunks: string[]): Flag[] {
+/* ---------------- Data Tracking & Retention ---------------- */
+
+export function detectDataTrackingRetention(chunks: string[]): Flag[] {
   const flags: Flag[] = [];
 
   chunks.forEach((chunk, i) => {
     const lower = chunk.toLowerCase();
 
-    if (
+    const trackingHit =
       lower.includes("cookies") ||
       lower.includes("tracking technologies") ||
       lower.includes("targeted advertising") ||
@@ -154,10 +128,21 @@ export function detectTracking(chunks: string[]): Flag[] {
       lower.includes("behavioral advertising") ||
       lower.includes("pixels") ||
       lower.includes("device identifiers") ||
-      lower.includes("analytics providers")
-    ) {
+      lower.includes("analytics providers");
+
+    const retentionHit =
+      lower.includes("retain") ||
+      lower.includes("retention") ||
+      lower.includes("indefinitely") ||
+      lower.includes("as long as necessary") ||
+      lower.includes("data deletion") ||
+      lower.includes("delete your data") ||
+      lower.includes("request deletion") ||
+      lower.includes("legal obligation");
+
+    if (trackingHit || retentionHit) {
       flags.push({
-        category: "Tracking / Cookies / Advertising",
+        category: "Data Tracking / Cookies / Retention",
         chunkIndex: i,
         snippet: chunk.slice(0, 200),
       });
@@ -166,39 +151,68 @@ export function detectTracking(chunks: string[]): Flag[] {
 
   return flags;
 }
+/* ---------------- Auto-Renewal / Recurring Billing ---------------- */
 
+export function detectAutoRenewal(chunks: string[]): Flag[] {
+  const flags: Flag[] = [];
+
+  chunks.forEach((chunk, i) => {
+    const lower = chunk.toLowerCase();
+
+    if (
+      lower.includes("auto-renew") ||
+      lower.includes("auto renew") ||
+      lower.includes("automatically renew") ||
+      lower.includes("recurring") ||
+      lower.includes("recurring billing") ||
+      lower.includes("subscription renews") ||
+      lower.includes("renews automatically") ||
+      lower.includes("free trial") ||
+      lower.includes("trial period") ||
+      lower.includes("convert to a paid") ||
+      lower.includes("charged") && lower.includes("monthly") // simple combo trigger
+    ) {
+      flags.push({
+        category: "Auto-Renewal / Recurring Charges",
+        chunkIndex: i,
+        snippet: chunk.slice(0, 200),
+      });
+    }
+  });
+
+  return flags;
+}
 export type DetectorKey =
   | "arbitration"
   | "dataSharing"
-  | "dataRetention"
+  | "dataTrackingRetention"
+  | "autoRenewal"
   | "unilateralChanges"
-  | "liability"
-  | "tracking";
-
+  | "liability";
 export const detectorLabels: Record<DetectorKey, string> = {
   arbitration: "Arbitration / Class Action Waiver",
   dataSharing: "Data Sharing / Personal Information",
-  dataRetention: "Data Retention / Deletion",
+  dataTrackingRetention: "Data Tracking / Cookies / Retention",
+  autoRenewal: "Auto-Renewal / Recurring Charges",
   unilateralChanges: "Unilateral Changes",
   liability: "Liability Waiver / Disclaimer",
-  tracking: "Tracking / Cookies / Advertising",
 };
 
 export const detectors: Record<DetectorKey, (chunks: string[]) => Flag[]> = {
   arbitration: detectArbitration,
   dataSharing: detectDataSharing,
-  dataRetention: detectDataRetention,
+  dataTrackingRetention: detectDataTrackingRetention,
+  autoRenewal: detectAutoRenewal,
   unilateralChanges: detectUnilateralChanges,
   liability: detectLiabilityWaiver,
-  tracking: detectTracking,
 };
 export function detectAll(chunks: string[]): Flag[] {
   return [
     ...detectArbitration(chunks),
     ...detectDataSharing(chunks),
-    ...detectDataRetention(chunks),
+    ...detectDataTrackingRetention(chunks),
+    ...detectAutoRenewal(chunks),
     ...detectUnilateralChanges(chunks),
-    ...detectTracking(chunks),
-    ...detectLiabilityWaiver(chunks)
+    ...detectLiabilityWaiver(chunks),
   ];
 }

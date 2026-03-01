@@ -37,6 +37,19 @@ USER PROFILE: ${context || "A standard consumer"}
 Your task:
 Summarize the document into the structured sections below. Focus only on information explicitly stated in the text. Do not speculate or infer beyond what is written.
 
+Severity Rules:
+
+Mark an item as [CRITICAL] if it includes:
+- Broad data collection, data sharing with third parties, or unclear data usage policies.
+- The company's right to change terms unilaterally without notice.
+- Mandatory arbitration or waiver of class action rights.
+- Limitation of liability clauses that significantly restrict user remedies.
+- Indemnification requirements imposed on the user.
+- Termination without cause or without notice.
+- Automatic renewals or binding recurring charges.
+- Broad license rights granted to the company over user content.
+When an item meets any of the above criteria, prefix the bullet point with:
+[CRITICAL]
 Structure your response exactly using these section headers:
 
 1. Key User Obligations
@@ -52,7 +65,7 @@ Writing Requirements:
 - Use clear 8th-grade reading level.
 - Be neutral and factual (not alarmist or overly reassuring).
 - Do NOT copy long passages from the agreement.
-- You may quote short phrases (5–12 words) if helpful.
+- You may quote short phrases (5-12 words) if helpful.
 - If a section is not mentioned in the text, write: "Not specified."
 - Do not repeat the same point across multiple sections.
 
