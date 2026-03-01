@@ -1,6 +1,8 @@
+// src/App.tsx
 import { useState } from "react";
 import PolicyInput from "./components/PolicyInput";
 import { normalizeText } from "./utilities/normalize";
+import { chunkText } from "./utilities/chunks";
 import { chunkText } from "./utilities/chunks";
 import { detectors, detectorLabels } from "./utilities/detect";
 import type { DetectorKey, Flag } from "./utilities/detect";
@@ -121,6 +123,7 @@ function App() {
         )}
       </div>
 
+      {/* Chunk check */}
       <div className="section">
         <h2>Detected Clauses ({flags.length})</h2>
         {!hasAnalyzed && <p className="muted">Upload a policy to see specific legal flags.</p>}

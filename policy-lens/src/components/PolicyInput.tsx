@@ -1,12 +1,11 @@
 import React, { useRef, useState } from "react";
 
 interface PolicyInputProps {
-  onAnalyze: (text: string) => void;
-  onClear: () => void;
+  text: string;
+  onTextChange: (text: string) => void;
 }
 
-export default function PolicyInput({ onAnalyze, onClear }: PolicyInputProps) {
-  const [text, setText] = useState<string>("");
+export default function PolicyInput({ text, onTextChange }: PolicyInputProps) {
   const [filename, setFilename] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -23,8 +22,8 @@ export default function PolicyInput({ onAnalyze, onClear }: PolicyInputProps) {
     setFilename(file.name);
     const reader = new FileReader();
     reader.onload = (e) => {
-      const fileText = e.target?.result as string;
-      setText(fileText ?? "");
+      const fileText = (e.target?.result as string) ?? "";
+      onTextChange(fileText);
     };
     reader.readAsText(file);
   }
@@ -55,10 +54,10 @@ export default function PolicyInput({ onAnalyze, onClear }: PolicyInputProps) {
       </div>
 
       <textarea
+        className="textarea"
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => onTextChange(e.target.value)}
         placeholder="Paste Terms & Conditions here..."
-        style={textareaStyle}
       />
 
       <div style={footerStyle}>
