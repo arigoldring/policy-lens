@@ -117,6 +117,8 @@ setChunkOffsets(buildOffsetsFromSearch(normalized, chunked));
       if (!response.ok) throw new Error("Could not connect to the AI server.");
 
       const data = await response.json();
+      console.log("SUMMARY LENGTH:", (data.summary ?? "").length);
+      console.log("SUMMARY END:", (data.summary ?? "").slice(-200));
       setSummary(data.summary || "No summary was returned.");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "An unexpected error occurred.");
@@ -308,26 +310,40 @@ function jumpToTextareaChunk(index: number) {
       {error && <div className="text-rose-600 font-semibold">{error}</div>}
 
       {summary && (
-  <div className="whitespace-pre-wrap break-words leading-8 bg-slate-50/60 p-6 rounded-xl border-l-8 border-indigo-500">
-    {summary.split("\n").map((line, i) => {
-  const hasCritical = /\[critical\]/i.test(line);
+  <div className="whitespace-pre-wrap break-words leading-8 bg-slate-50/60 p-6 rounded-xl border-l-8 border-indigo-500
+                  max-h-[70vh] overflow-y-auto overflow-x-hidden pr-2">
+    {summary.split("\n").map((rawLine, i) => {
+      const line = rawLine.trimEnd();
 
-  const tagMatch = line.match(/\[tags:\s*([^\]]+)\]/i);
-  const tags = tagMatch ? tagMatch[1].split(",").map((t) => t.trim()) : [];
+      // Extract tags
+      const tagMatch = line.match(/\[tags:\s*([^\]]+)\]/i);
+      const tags = tagMatch ? tagMatch[1].split(",").map((t) => t.trim()) : [];
 
-  const isRed = hasCritical && tags.some((t) => criticalPrefs.includes(t));
+      // Does this line match what user cares about?
+      const isRed = tags.some((t) => criticalPrefs.includes(t));
 
-  const cleanLine = line
-    .replace(/\[tags:.*?\]/gi, "")
-    .replace(/\[critical\]/gi, "")
-    .trim();
+      // Remove metadata from what we DISPLAY
+      const cleanLine = line
+  .replace(/^\s*-\s*\[CRITICAL\]\s*/i, "- ")
+  .replace(/^\s*\[CRITICAL\]\s*/i, "")
+  .replace(/\s*\[tags:.*$/i, "")
+  .trim();
 
-  return (
-    <div key={i} className={isRed ? "text-red-600 font-semibold" : "text-slate-700"}>
-      {cleanLine}
-    </div>
-  );
-})}
+      // If it's an empty line, keep spacing
+      if (!cleanLine) return <div key={i} className="h-2" />;
+
+      return (
+        <div
+          key={i}
+          className={[
+            "whitespace-pre-wrap break-words", // ✅ wrapping on child
+            isRed ? "text-red-600 font-semibold" : "text-slate-700",
+          ].join(" ")}
+        >
+          {cleanLine}
+        </div>
+      );
+    })}
   </div>
 )}
       

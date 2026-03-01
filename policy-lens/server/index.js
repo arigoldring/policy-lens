@@ -24,7 +24,7 @@ app.post("/api/summarize", async (req, res) => {
       model: "gemini-3-flash-preview", // Updated to the stable Flash model identifier
       generationConfig: {
         temperature: 0.3, 
-        maxOutputTokens: 2500, // Slightly higher to accommodate the extra section
+        maxOutputTokens: 9000, // Slightly higher to accommodate the extra section
       },
     });
 
@@ -34,37 +34,50 @@ app.post("/api/summarize", async (req, res) => {
 
 USER PROFILE: ${context || "A standard consumer"}
 
+OUTPUT FORMAT RULES (MANDATORY):
+
+- You MUST output ALL 7 section headers exactly as written below, in the exact order.
+- You MUST include at least ONE bullet point under EACH section.
+- If the text does not mention that topic, output exactly:
+  - Not specified. [tags: other]
+- Every bullet MUST end with a tag label in this exact format:
+  [tags: tag1, tag2]
+- Tags must be lowercase and chosen only from the allowed list below.
+- If no category clearly applies, use:
+  [tags: other]
+- If a bullet qualifies as critical, prefix it with:
+  [CRITICAL]
+- Do NOT omit any section.
+- Do NOT add extra headers.
+- Do NOT explain the tags.
+
+------------------------------------------------------------
+
+ALLOWED TAGS (use exact spelling, lowercase only):
+
+autoRenewal  
+dataCollection  
+dataSale  
+dataRetention  
+tracking  
+arbitration  
+liability  
+unilateralChanges  
+userContentLicense  
+termination  
+indemnification  
+other  
+
+------------------------------------------------------------
+
 Your task:
-Summarize the document into the structured sections below. Focus only on information explicitly stated in the text. Do not speculate or infer beyond what is written.
+Summarize the document into the structured sections below. Focus ONLY on information explicitly stated in the text. Do not speculate or infer beyond what is written.
 
-For EACH bullet point:
-1. Add a tags label at the END of the line in this exact format:
-   [tags: tag1, tag2]
-
-2. Only use tags from this list (exact spelling, lowercase only):
-   - autoRenewal
-   - dataCollection
-   - dataSale
-   - dataRetention
-   - tracking
-   - arbitration
-   - liability
-   - unilateralChanges
-   - userContentLicense
-   - termination
-   - indemnification
-   - other
-
-3. Assign one or more tags only if clearly supported by the text.
-4. If no category applies, use:
-   [tags: other]
-5. Do NOT invent new tags.
-6. A bullet may contain multiple tags.
-7. If the text does not mention a section, output exactly one bullet: - Not specified.
+------------------------------------------------------------
 
 Severity Rules:
 
-Prefix a bullet point with [CRITICAL] ONLY if it includes ANY of the following:
+Prefix a bullet with [CRITICAL] ONLY if it includes ANY of the following:
 
 - Automatic renewals, recurring billing, subscription terms that renew unless cancelled, free trials that convert to paid plans, or charges that continue without explicit re-consent.
 - Broad data collection practices, behavioral tracking, sale of personal data, sharing with third parties or affiliates, or vague language such as "for business purposes."
@@ -76,8 +89,9 @@ Prefix a bullet point with [CRITICAL] ONLY if it includes ANY of the following:
 - Indemnification requirements imposed on the user.
 - Termination without cause or without notice.
 
-If a bullet meets any of the above criteria, prefix it with:
-[CRITICAL]
+Only mark as [CRITICAL] if clearly supported by the text.
+
+------------------------------------------------------------
 
 Structure your response EXACTLY using these section headers:
 
@@ -89,23 +103,19 @@ Structure your response EXACTLY using these section headers:
 6. Risks to the User
 7. Personalized Impact for "${context || "standard user"}"
 
+------------------------------------------------------------
+
 Writing Requirements:
+
 - Use bullet points under each section.
 - Use clear 8th-grade reading level.
-- Be neutral and factual (not alarmist or overly reassuring).
+- Be neutral and factual.
 - Do NOT copy long passages from the agreement.
-- You may quote short phrases (5–12 words) if helpful.
-- If a section is not mentioned in the text, write: "Not specified."
+- You may quote short phrases (5-12 words) if helpful.
 - Do not repeat the same point across multiple sections.
+- If unclear, state: "Unclear from the document."
 
-For the Personalized Impact section:
-- Explain how these terms may uniquely affect someone in this role.
-- Focus on realistic scenarios, restrictions, or data implications relevant to this user profile.
-- Avoid speculation beyond the text.
-
-Accuracy Rules:
-- If something is unclear in the agreement, say "Unclear from the document."
-- Do not add outside legal knowledge.
+------------------------------------------------------------
 
 End with this exact disclaimer:
 
