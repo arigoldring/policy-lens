@@ -35,12 +35,36 @@ app.post("/api/summarize", async (req, res) => {
 USER PROFILE: ${context || "A standard consumer"}
 
 Your task:
-Your task:
 Summarize the document into the structured sections below. Focus only on information explicitly stated in the text. Do not speculate or infer beyond what is written.
+
+For EACH bullet point:
+1. Add a tags label at the END of the line in this exact format:
+   [tags: tag1, tag2]
+
+2. Only use tags from this list (exact spelling, lowercase only):
+   - autoRenewal
+   - dataCollection
+   - dataSale
+   - dataRetention
+   - tracking
+   - arbitration
+   - liability
+   - unilateralChanges
+   - userContentLicense
+   - termination
+   - indemnification
+   - other
+
+3. Assign one or more tags only if clearly supported by the text.
+4. If no category applies, use:
+   [tags: other]
+5. Do NOT invent new tags.
+6. A bullet may contain multiple tags.
+7. If the text does not mention a section, output exactly one bullet: - Not specified.
 
 Severity Rules:
 
-Mark an item as [CRITICAL] if it includes ANY of the following:
+Prefix a bullet point with [CRITICAL] ONLY if it includes ANY of the following:
 
 - Automatic renewals, recurring billing, subscription terms that renew unless cancelled, free trials that convert to paid plans, or charges that continue without explicit re-consent.
 - Broad data collection practices, behavioral tracking, sale of personal data, sharing with third parties or affiliates, or vague language such as "for business purposes."
@@ -52,10 +76,10 @@ Mark an item as [CRITICAL] if it includes ANY of the following:
 - Indemnification requirements imposed on the user.
 - Termination without cause or without notice.
 
-When an item meets any of the above criteria, prefix the bullet point with:
+If a bullet meets any of the above criteria, prefix it with:
 [CRITICAL]
 
-Structure your response exactly using these section headers:
+Structure your response EXACTLY using these section headers:
 
 1. Key User Obligations
 2. Company Rights
@@ -70,7 +94,7 @@ Writing Requirements:
 - Use clear 8th-grade reading level.
 - Be neutral and factual (not alarmist or overly reassuring).
 - Do NOT copy long passages from the agreement.
-- You may quote short phrases (5-12 words) if helpful.
+- You may quote short phrases (5–12 words) if helpful.
 - If a section is not mentioned in the text, write: "Not specified."
 - Do not repeat the same point across multiple sections.
 

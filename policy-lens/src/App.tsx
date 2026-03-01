@@ -5,7 +5,7 @@ import { chunkText } from "./utilities/chunks";
 import { detectors, detectorLabels } from "./utilities/detect";
 import type { DetectorKey, Flag } from "./utilities/detect";
 import { testGemini } from "./utilities/ai";
-import {PolicyViewer} from "./components/PolicyViewer";
+
 function buildOffsetsFromSearch(fullText: string, chunked: string[]) {
   const offsets: { start: number; end: number }[] = [];
   let cursor = 0;
@@ -42,7 +42,7 @@ function App() {
   const [currentText, setCurrentText] = useState("");
   const [userContext, setUserContext] = useState("");
   const [lastReceivedText, setLastReceivedText] = useState("");
-  const viewerRef = useRef<HTMLDivElement | null>(null);
+  
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [chunks, setChunks] = useState<string[]>([]);
   const [flags, setFlags] = useState<Flag[]>([]);
@@ -51,12 +51,26 @@ function App() {
   const [summary, setSummary] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [criticalPrefs, setCriticalPrefs] = useState<string[]>([]);
 
   const allKeys = Object.keys(detectors) as DetectorKey[];
   const [selected, setSelected] = useState<DetectorKey[]>(allKeys);
 
-  const [activeSegment, setActiveSegment] = useState<number | null>(null);
+  
   const [chunkOffsets, setChunkOffsets] = useState<{start:number; end:number}[]>([]);
+  const criticalOptions = [
+  { key: "autoRenewal", label: "Auto-renewals / subscriptions" },
+  { key: "dataCollection", label: "Data collection" },
+  { key: "dataSale", label: "Sale / sharing of data" },
+  { key: "tracking", label: "Tracking / cookies" },
+  { key: "dataRetention", label: "Data retention / deletion" },
+  { key: "userContentLicense", label: "License to your content" },
+  { key: "arbitration", label: "Arbitration / class action waiver" },
+  { key: "liability", label: "Liability waivers" },
+  { key: "unilateralChanges", label: "Company can change terms" },
+  { key: "termination", label: "Termination / bans" },
+  { key: "indemnification", label: "Indemnification" },
+];
 
   async function handleAnalyze() {
     if (!currentText.trim()) return;
@@ -151,8 +165,8 @@ function jumpToTextareaChunk(index: number) {
     setSelected(allKeys);
     setSummary("");
     setError("");
-    setActiveSegment(null);
     setChunkOffsets([]);
+    setCriticalPrefs([]);
   }
 
   return (
@@ -168,29 +182,48 @@ function jumpToTextareaChunk(index: number) {
 
           <main className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-8 items-stretch">
   {/* LEFT column */}
-  <section className="w-full">
-  <PolicyInput
-    text={currentText}
-    onTextChange={setCurrentText}
-    context={userContext}
-    onContextChange={setUserContext}
-    onAnalyze={handleAnalyze}
-    onClear={handleClear}
-    textareaRef={textareaRef}
-  />
+  <section className="w-full flex flex-col gap-6">
+    <PolicyInput
+      text={currentText}
+      onTextChange={setCurrentText}
+      context={userContext}
+      onContextChange={setUserContext}
+      onAnalyze={handleAnalyze}
+      onClear={handleClear}
+      textareaRef={textareaRef}
+    />
 
-  {chunks.length > 0 && (
-    <div className="mt-6">
-    <PolicyViewer
-  chunks={chunks}
-  activeIndex={activeSegment}
-  containerRef={viewerRef}
-/>
-    </div>
-  )}
-</section>
+    {/* Critical Preferences */}
+    <section className="bg-white/90 backdrop-blur-xl p-8 rounded-2xl border border-white/30 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05)]">
+      <h2 className="text-[0.9rem] uppercase tracking-[0.1em] text-slate-500 mb-5 border-b border-slate-200 pb-2.5">
+        Mark What Is Critical To You
+      </h2>
 
-  {/* RIGHT column: stack sections */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+  {criticalOptions.map((option) => (
+    <label
+      key={option.key}
+      className="flex items-center gap-3 p-3.5 bg-white border border-slate-200 rounded-xl text-sm font-medium transition hover:border-indigo-500 hover:-translate-y-0.5 hover:shadow-md"
+    >
+      <input
+        type="checkbox"
+        checked={criticalPrefs.includes(option.key)}
+        onChange={(e) =>
+          setCriticalPrefs((prev) =>
+            e.target.checked
+              ? [...prev, option.key]
+              : prev.filter((k) => k !== option.key)
+          )
+        }
+      />
+      {option.label}
+    </label>
+  ))}
+</div>
+    </section>
+  </section>
+
+  {/* RIGHT column */}
   <div className="flex flex-col gap-8">
     {/* Scan Settings */}
     <section className="bg-white/90 backdrop-blur-xl p-8 rounded-2xl border border-white/30 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05)]">
@@ -209,7 +242,9 @@ function jumpToTextareaChunk(index: number) {
               checked={selected.includes(key)}
               onChange={(e) =>
                 setSelected((prev) =>
-                  e.target.checked ? [...prev, key] : prev.filter((k) => k !== key)
+                  e.target.checked
+                    ? [...prev, key]
+                    : prev.filter((k) => k !== key)
                 )
               }
             />
@@ -226,8 +261,11 @@ function jumpToTextareaChunk(index: number) {
       </h2>
 
       {!hasAnalyzed && (
-        <p className="text-slate-500 text-center">Upload a policy to see specific legal flags.</p>
+        <p className="text-slate-500 text-center">
+          Upload a policy to see specific legal flags.
+        </p>
       )}
+
       {hasAnalyzed && flags.length === 0 && (
         <p className="text-center">✅ No selected issues detected.</p>
       )}
@@ -235,17 +273,19 @@ function jumpToTextareaChunk(index: number) {
       <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
         {flags.map((flag, idx) => (
           <div
-  key={idx}
-  onClick={() => jumpToTextareaChunk(flag.chunkIndex)}
-  className="cursor-pointer p-5 bg-white border border-rose-100 rounded-2xl shadow-sm hover:border-indigo-500 hover:shadow-md transition"
->
+            key={idx}
+            onClick={() => jumpToTextareaChunk(flag.chunkIndex)}
+            className="cursor-pointer p-5 bg-white border border-rose-100 rounded-2xl shadow-sm hover:border-indigo-500 hover:shadow-md transition"
+          >
             <span className="inline-block text-rose-700 font-bold text-xs bg-rose-50 px-3 py-1 rounded-full uppercase mb-3">
               {flag.category}
             </span>
             <p className="italic text-slate-600 border-l-4 border-slate-200 pl-4">
               "{flag.snippet}"
             </p>
-            <small className="text-slate-500">Segment #{flag.chunkIndex + 1}</small>
+            <small className="text-slate-500">
+              Segment #{flag.chunkIndex + 1}
+            </small>
           </div>
         ))}
       </div>
@@ -268,25 +308,29 @@ function jumpToTextareaChunk(index: number) {
       {error && <div className="text-rose-600 font-semibold">{error}</div>}
 
       {summary && (
-        <div className="whitespace-pre-wrap break-words leading-8 bg-slate-50/60 p-6 rounded-xl border-l-8 border-indigo-500">
-  {summary.split("\n").map((line, i) => {
-    const isCritical = line.includes("[CRITICAL]");
+  <div className="whitespace-pre-wrap break-words leading-8 bg-slate-50/60 p-6 rounded-xl border-l-8 border-indigo-500">
+    {summary.split("\n").map((line, i) => {
+  const hasCritical = /\[critical\]/i.test(line);
 
-    return (
-      <div
-        key={i}
-        className={
-          isCritical
-            ? "text-red-600 font-semibold"
-            : "text-slate-700"
-        }
-      >
-        {line.replace("[CRITICAL]", "").trim()}
-      </div>
-    );
-  })}
-</div>
-      )}
+  const tagMatch = line.match(/\[tags:\s*([^\]]+)\]/i);
+  const tags = tagMatch ? tagMatch[1].split(",").map((t) => t.trim()) : [];
+
+  const isRed = hasCritical && tags.some((t) => criticalPrefs.includes(t));
+
+  const cleanLine = line
+    .replace(/\[tags:.*?\]/gi, "")
+    .replace(/\[critical\]/gi, "")
+    .trim();
+
+  return (
+    <div key={i} className={isRed ? "text-red-600 font-semibold" : "text-slate-700"}>
+      {cleanLine}
+    </div>
+  );
+})}
+  </div>
+)}
+      
     </section>
   )}
 </main>
