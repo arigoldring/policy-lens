@@ -63,7 +63,7 @@ tracking
 arbitration  
 liability  
 unilateralChanges  
-userContentLicense  
+userContent  
 termination  
 indemnification  
 other  

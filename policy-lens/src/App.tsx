@@ -59,12 +59,13 @@ function App() {
   
   const [chunkOffsets, setChunkOffsets] = useState<{start:number; end:number}[]>([]);
   const criticalOptions = [
+  
   { key: "autoRenewal", label: "Auto-renewals / subscriptions" },
   { key: "dataCollection", label: "Data collection" },
   { key: "dataSale", label: "Sale / sharing of data" },
   { key: "tracking", label: "Tracking / cookies" },
   { key: "dataRetention", label: "Data retention / deletion" },
-  { key: "userContentLicense", label: "License to your content" },
+  { key: "userContent", label: "License to your content" },
   { key: "arbitration", label: "Arbitration / class action waiver" },
   { key: "liability", label: "Liability waivers" },
   { key: "unilateralChanges", label: "Company can change terms" },
@@ -198,7 +199,7 @@ function jumpToTextareaChunk(index: number) {
     {/* Critical Preferences */}
     <section className="bg-white/90 backdrop-blur-xl p-8 rounded-2xl border border-white/30 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05)]">
       <h2 className="text-[0.9rem] uppercase tracking-[0.1em] text-slate-500 mb-5 border-b border-slate-200 pb-2.5">
-        Mark What Is Critical To You
+        Step 3: Mark Which Are Most Important To You
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -230,7 +231,7 @@ function jumpToTextareaChunk(index: number) {
     {/* Scan Settings */}
     <section className="bg-white/90 backdrop-blur-xl p-8 rounded-2xl border border-white/30 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05)]">
       <h2 className="text-[0.9rem] uppercase tracking-[0.1em] text-slate-500 mb-5 border-b border-slate-200 pb-2.5">
-        Scan Settings
+        Step 2: Scan Settings
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -264,7 +265,7 @@ function jumpToTextareaChunk(index: number) {
 
       {!hasAnalyzed && (
         <p className="text-slate-500 text-center">
-          Upload a policy to see specific legal flags.
+          Upload a policy to see specific flags.
         </p>
       )}
 
