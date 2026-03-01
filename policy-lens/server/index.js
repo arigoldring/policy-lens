@@ -35,21 +35,26 @@ app.post("/api/summarize", async (req, res) => {
 USER PROFILE: ${context || "A standard consumer"}
 
 Your task:
+Your task:
 Summarize the document into the structured sections below. Focus only on information explicitly stated in the text. Do not speculate or infer beyond what is written.
 
 Severity Rules:
 
-Mark an item as [CRITICAL] if it includes:
-- Broad data collection, data sharing with third parties, or unclear data usage policies.
-- The company's right to change terms unilaterally without notice.
+Mark an item as [CRITICAL] if it includes ANY of the following:
+
+- Automatic renewals, recurring billing, subscription terms that renew unless cancelled, free trials that convert to paid plans, or charges that continue without explicit re-consent.
+- Broad data collection practices, behavioral tracking, sale of personal data, sharing with third parties or affiliates, or vague language such as "for business purposes."
+- Indefinite or unclear data retention policies.
+- Broad, perpetual, worldwide, transferable, sublicensable, or royalty-free license rights granted to the company over user-generated content.
+- The company's right to change terms unilaterally without meaningful notice.
 - Mandatory arbitration or waiver of class action rights.
 - Limitation of liability clauses that significantly restrict user remedies.
 - Indemnification requirements imposed on the user.
 - Termination without cause or without notice.
-- Automatic renewals or binding recurring charges.
-- Broad license rights granted to the company over user content.
+
 When an item meets any of the above criteria, prefix the bullet point with:
 [CRITICAL]
+
 Structure your response exactly using these section headers:
 
 1. Key User Obligations

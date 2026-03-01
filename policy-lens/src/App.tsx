@@ -268,9 +268,24 @@ function jumpToTextareaChunk(index: number) {
       {error && <div className="text-rose-600 font-semibold">{error}</div>}
 
       {summary && (
-        <div className="whitespace-pre-wrap break-words text-slate-700 leading-8 bg-slate-50/60 p-6 rounded-xl border-l-8 border-indigo-500">
-          {summary}
-        </div>
+        <div className="whitespace-pre-wrap break-words leading-8 bg-slate-50/60 p-6 rounded-xl border-l-8 border-indigo-500">
+  {summary.split("\n").map((line, i) => {
+    const isCritical = line.includes("[CRITICAL]");
+
+    return (
+      <div
+        key={i}
+        className={
+          isCritical
+            ? "text-red-600 font-semibold"
+            : "text-slate-700"
+        }
+      >
+        {line.replace("[CRITICAL]", "").trim()}
+      </div>
+    );
+  })}
+</div>
       )}
     </section>
   )}
