@@ -1,4 +1,8 @@
 import React, { useRef, useState } from "react";
+import { DISCORD_TOS } from "./discord";
+import DiscordLogo from "../assets/Discord-Symbol-White.png";
+import { META_TOS } from "./meta";
+import Facebook_Logo from "../assets/Facebook_Logo_Primary.png";
 
 interface PolicyInputProps {
   text: string;
@@ -59,20 +63,57 @@ export default function PolicyInput({
       </div>
 
       {/* Upload */}
-      <div className="flex items-center justify-between gap-3 mb-3">
-        <label className="px-4 py-2 rounded-xl bg-slate-100 border border-slate-200 cursor-pointer text-sm font-semibold hover:border-indigo-500 transition">
-          📁 Upload .txt
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".txt"
-            onChange={handleFileUpload}
-            className="hidden"
-          />
-        </label>
+      <div className="flex items-center gap-3 mb-3 flex-wrap">
+  <label className="px-4 py-2 rounded-xl bg-slate-100 border border-slate-200 cursor-pointer text-sm font-semibold hover:border-indigo-500 transition">
+    📁 Upload .txt
+    <input
+      ref={fileInputRef}
+      type="file"
+      accept=".txt"
+      onChange={handleFileUpload}
+      className="hidden"
+    />
+  </label>
 
-        {filename && <span className="text-xs italic text-slate-500">📄 {filename}</span>}
-      </div>
+  <button
+  type="button"
+  className="px-4 py-2 rounded-xl bg-slate-100 border border-slate-200 text-sm font-semibold hover:border-indigo-500 transition flex items-center gap-2"
+  onClick={() => {
+    setFilename("Discord Terms (preset)");
+    onTextChange(DISCORD_TOS);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }}
+>
+  <div className="w-5 h-5 bg-indigo-500 rounded-full flex items-center justify-center">
+  <img
+    src={DiscordLogo}
+    alt="Discord"
+    className="w-3 h-3"
+  />
+</div>
+  Load Discord Terms
+</button>
+<button
+  type="button"
+  className="px-4 py-2 rounded-xl bg-slate-100 border border-slate-200 text-sm font-semibold hover:border-indigo-500 transition flex items-center gap-2"
+  onClick={() => {
+    setFilename("Meta Terms (preset)");
+    onTextChange(META_TOS);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }}
+>
+  <img
+    src={Facebook_Logo}
+    alt="Meta"
+    className="w-4 h-4 object-contain"
+  />
+  Load Meta Terms
+</button>
+
+  {filename && (
+    <span className="text-xs italic text-slate-500 ml-auto">📄 {filename}</span>
+  )}
+</div>
 
       {/* Textarea */}
       <textarea
