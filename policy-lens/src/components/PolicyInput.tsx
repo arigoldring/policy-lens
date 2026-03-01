@@ -3,6 +3,8 @@ import { DISCORD_TOS } from "./discord";
 import DiscordLogo from "../assets/Discord-Symbol-White.png";
 import { META_TOS } from "./meta";
 import Facebook_Logo from "../assets/Facebook_Logo_Primary.png";
+import { AMAZON_TOS } from "./amazon";
+import Amazon_Logo_1 from "../assets/Amazon_Logo_1.png";
 
 interface PolicyInputProps {
   text: string;
@@ -108,6 +110,24 @@ export default function PolicyInput({
     className="w-4 h-4 object-contain"
   />
   Load Meta Terms
+</button>
+<button
+  type="button"
+  className="px-4 py-2 rounded-xl bg-slate-100 border border-slate-200 text-sm font-semibold hover:border-indigo-500 transition flex items-center gap-2"
+  onClick={() => {
+    setFilename("Amazon Terms (preset)");
+    onTextChange(AMAZON_TOS);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }}
+>
+  <div className="w-6 h-6 bg-slate-200 rounded-md flex items-center justify-center">
+  <img
+    src={Amazon_Logo_1}
+    alt="Amazon"
+    className="w-4 h-4 object-contain"
+  />
+</div>
+  Load Amazon
 </button>
 
   {filename && (
