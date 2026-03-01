@@ -6,6 +6,7 @@ import { chunkText } from "./utilities/chunks";
 import "./App.css";
 import { detectors, detectorLabels } from "./utilities/detect";
 import type { DetectorKey, Flag } from "./utilities/detect";
+import { testGemini } from "./utilities/ai"
 
 function App() {
   const [currentText, setCurrentText] = useState<string>("");
@@ -47,6 +48,10 @@ function App() {
     setHasAnalyzed(false);
     setSelected([]);
   }
+  async function handleAiPing() {
+  const response = await testGemini("Say 'PolicyLens is online!'");
+  alert(response);
+}
 
   return (
     <div className="container">
@@ -97,6 +102,9 @@ function App() {
           <button onClick={handleClear} style={{ marginLeft: "10px" }}>
             Clear
           </button>
+          <button onClick={handleAiPing} style={{ backgroundColor: '#4a90e2', color: 'white' }}>
+  Test AI Connection
+</button>
         </div>
       </div>
 
