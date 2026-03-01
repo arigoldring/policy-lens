@@ -1,4 +1,4 @@
 chrome.action.onClicked.addListener(() => {
-  const fullAppUrl = "http://localhost:5173/"; // change if needed
-  chrome.tabs.create({ url: fullAppUrl });
+  const url = chrome.runtime.getURL("dist/index.html");
+  chrome.tabs.create({ url });
 });
