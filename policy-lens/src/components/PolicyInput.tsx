@@ -9,13 +9,13 @@ interface PolicyInputProps {
   onClear: () => void;
 }
 
-export default function PolicyInput({ 
-  text, 
-  onTextChange, 
-  context, 
-  onContextChange, 
-  onAnalyze, 
-  onClear 
+export default function PolicyInput({
+  text,
+  onTextChange,
+  context,
+  onContextChange,
+  onAnalyze,
+  onClear,
 }: PolicyInputProps) {
   const [filename, setFilename] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -31,53 +31,67 @@ export default function PolicyInput({
 
     setFilename(file.name);
     const reader = new FileReader();
-    reader.onload = (e) => {
-      const fileText = (e.target?.result as string) ?? "";
-      onTextChange(fileText);
-    };
+    reader.onload = (e) => onTextChange(((e.target?.result as string) ?? ""));
     reader.readAsText(file);
   }
 
   return (
-    <div className="section">
-      <h2 style={{ marginBottom: '15px' }}>Step 1: Context & Policy</h2>
-      
-      {/* NEW: Context Input */}
-      <div style={{ marginBottom: '20px' }}>
-        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b', marginBottom: '8px' }}>
-          WHO ARE YOU? (E.G., STUDENT, OFFICE WORKER, DEVELOPER)
+    <div className="bg-white/90 backdrop-blur-xl p-8 rounded-2xl border border-white/30 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05)]">
+      <h2 className="text-[0.9rem] uppercase tracking-[0.1em] text-slate-500 mb-5 border-b border-slate-200 pb-2.5">
+        Step 1: Context & Policy
+      </h2>
+
+      {/* Context */}
+      <div className="mb-5">
+        <label className="block text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wide">
+          Who are you? (e.g., student, office worker, developer)
         </label>
-        <input 
+        <input
           type="text"
           value={context}
           onChange={(e) => onContextChange(e.target.value)}
           placeholder="I am a student at a public university..."
-          style={contextInputStyle}
+          className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50/70 text-slate-900 placeholder:text-slate-400 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15"
         />
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-        <label style={fileLabelStyle}>
+      {/* Upload */}
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <label className="px-4 py-2 rounded-xl bg-slate-100 border border-slate-200 cursor-pointer text-sm font-semibold hover:border-indigo-500 transition">
           📁 Upload .txt
-          <input ref={fileInputRef} type="file" accept=".txt" onChange={handleFileUpload} style={{ display: 'none' }} />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".txt"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
         </label>
-        {filename && <span style={{ fontSize: '0.8rem', fontStyle: 'italic' }}>📄 {filename}</span>}
+
+        {filename && <span className="text-xs italic text-slate-500">📄 {filename}</span>}
       </div>
 
+      {/* Textarea */}
       <textarea
-        className="textarea"
         value={text}
         onChange={(e) => onTextChange(e.target.value)}
         placeholder="Paste Terms & Conditions or EULA here..."
-        style={{ marginBottom: '15px',color: "black" }}
+        className="w-full min-h-[360px] p-4 rounded-2xl border border-slate-200 bg-slate-50/70 text-slate-900 placeholder:text-slate-400 outline-none resize-y focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15 mb-4"
       />
 
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-        <button onClick={onClear} className="secondary-button">Clear</button>
-        <button 
-          className="primary-button" 
-          onClick={onAnalyze} 
+      {/* Actions */}
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={onClear}
+          className="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:border-indigo-500 transition"
+        >
+          Clear
+        </button>
+
+        <button
+          onClick={onAnalyze}
           disabled={text.trim().length === 0}
+          className="px-4 py-2 rounded-xl bg-indigo-500 text-white font-semibold hover:bg-indigo-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Analyze Policy
         </button>
@@ -85,25 +99,3 @@ export default function PolicyInput({
     </div>
   );
 }
-
-const contextInputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "14px 16px",
-  borderRadius: "16px",
-  border: "1px solid #e2e8f0",
-  fontSize: "0.95rem",
-  fontFamily: "Inter, -apple-system, sans-serif",
-  boxSizing: "border-box",
-  background: "rgba(248, 250, 252, 0.7)",
-  outline: "none",
-  color: '#0f172a',
-};
-
-const fileLabelStyle: React.CSSProperties = {
-  padding: '6px 12px',
-  backgroundColor: '#f1f5f9',
-  borderRadius: '6px',
-  cursor: 'pointer',
-  fontSize: '0.8rem',
-  fontWeight: 600
-};
