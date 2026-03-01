@@ -42,16 +42,37 @@ function App() {
       setChunks(chunked);
 
       // Local Scan Logic
-      const keysToScan = selected.length > 0 ? selected : [];
+      const keysToScan = selected.length > 0 ? selected : allKeys;
       const found: Flag[] = keysToScan.flatMap((k) => detectors[k](chunked));
       setFlags(found);
+      // Get unique chunk indexes that were flagged
+const flaggedIdxs = Array.from(new Set(found.map((f) => f.chunkIndex)));
+
+// Add neighboring chunks for context
+const contextIdxs = new Set<number>();
+for (const idx of flaggedIdxs) {
+  contextIdxs.add(idx);
+  if (idx - 1 >= 0) contextIdxs.add(idx - 1);
+  if (idx + 1 < chunked.length) contextIdxs.add(idx + 1);
+}
+
+// Sort indexes for clean ordering
+const orderedIdxs = Array.from(contextIdxs).sort((a, b) => a - b);
+
+// Build text to send to AI
+const aiText =
+  orderedIdxs.length === 0
+    ? normalized // fallback if no flags
+    : orderedIdxs
+        .map((i) => `Segment ${i + 1}\n${chunked[i]}`)
+        .join("\n\n---\n\n");
 
       // API Call - Now sending 'context' to the backend
       const response = await fetch("http://localhost:3001/api/summarize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          text: normalized,
+          text: aiText,
           context: userContext // This is the crucial addition
         }),
       });
