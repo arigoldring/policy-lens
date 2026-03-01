@@ -9,30 +9,31 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Initialize Gemini 3 Flash
-// Note: Ensure your .env has GEMINI_API_KEY
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.post("/api/summarize", async (req, res) => {
   try {
-    const { text } = req.body;
+    // 1. Extract 'context' from the request body alongside 'text'
+    const { text, context } = req.body;
 
     if (!text) {
       return res.status(400).json({ error: "No text provided" });
     }
 
-    // Using Gemini 3 Flash for speed and cost-efficiency
     const model = genAI.getGenerativeModel({
-      model: "gemini-3-flash-preview", 
+      model: "gemini-3-flash-preview", // Updated to the stable Flash model identifier
       generationConfig: {
-        temperature: 0.3, // Lower temperature keeps the summary factual
-        maxOutputTokens: 2000,
+        temperature: 0.3, 
+        maxOutputTokens: 2500, // Slightly higher to accommodate the extra section
       },
     });
 
+    // 2. Weave the user's context into the prompt
     const prompt = `
-      You are a consumer rights legal analyst (DO NOT REPEAT THIS PIECE OF INFORMATION).
+      You are a consumer rights legal analyst (DO NOT LIST THIS WHEN WRITING, ONLY USE THIS AS CONTEXT FOR THE INFORMATION YOU ARE ABOUT TO WRITE)
       
+      USER PROFILE: ${context || "A standard consumer"}
+
       Summarize the following Terms of Service or EULA into these specific sections:
       1. Key User Obligations
       2. Company Rights
@@ -40,14 +41,15 @@ app.post("/api/summarize", async (req, res) => {
       4. Arbitration / Class Action Clauses
       5. Termination Conditions
       6. Risks to the User
+      7. PERSONALIZED IMPACT: Specifically explain how these terms affect a person who is a "${context || "standard user"}". 
+         Focus on use-cases, restrictions, or data risks unique to this role.
 
       Constraints:
       - Use a clear 8th-grade reading level.
       - Use bullet points for readability.
       - Do NOT repeat the legal text verbatim.
       - If a section is not mentioned in the text, state "Not specified."
-
-      Remind the viewer that this advice is not legally binding, as it was an AI generated summary.
+      - End with a clear disclaimer: "This is an AI-generated summary and is not legally binding advice."
 
       TEXT TO ANALYZE:
       ${text}
@@ -60,7 +62,6 @@ app.post("/api/summarize", async (req, res) => {
     res.json({ summary });
 
   } catch (error) {
-    // Log the detailed error for debugging
     console.error("Gemini API Error:", error.message);
     res.status(500).json({ 
       error: "Failed to generate summary",

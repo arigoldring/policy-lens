@@ -3,11 +3,20 @@ import React, { useRef, useState } from "react";
 interface PolicyInputProps {
   text: string;
   onTextChange: (text: string) => void;
+  context: string;
+  onContextChange: (context: string) => void;
   onAnalyze: () => void;
   onClear: () => void;
 }
 
-export default function PolicyInput({ text, onTextChange, onAnalyze, onClear }: PolicyInputProps) {
+export default function PolicyInput({ 
+  text, 
+  onTextChange, 
+  context, 
+  onContextChange, 
+  onAnalyze, 
+  onClear 
+}: PolicyInputProps) {
   const [filename, setFilename] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -17,7 +26,6 @@ export default function PolicyInput({ text, onTextChange, onAnalyze, onClear }: 
 
     if (!file.name.toLowerCase().endsWith(".txt")) {
       alert("Please upload a .txt file.");
-      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
@@ -30,113 +38,69 @@ export default function PolicyInput({ text, onTextChange, onAnalyze, onClear }: 
     reader.readAsText(file);
   }
 
-  function handleClear() {
-    setFilename(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-    onClear();
-  }
-
   return (
-    <div style={containerStyle}>
-      <h2 style={{ marginBottom: '10px' }}>Upload or Paste Policy</h2>
-
-      <div style={uploadBoxStyle}>
-        <label style={fileLabelStyle}>
-          📁 Upload .txt file
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".txt"
-            onChange={handleFileUpload}
-            style={{ display: 'none' }}
-          />
+    <div className="section">
+      <h2 style={{ marginBottom: '15px' }}>Step 1: Context & Policy</h2>
+      
+      {/* NEW: Context Input */}
+      <div style={{ marginBottom: '20px' }}>
+        <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#64748b', marginBottom: '8px' }}>
+          WHO ARE YOU? (E.G., STUDENT, OFFICE WORKER, DEVELOPER)
         </label>
-        {filename && <span style={filenameStyle}>📄 {filename}</span>}
+        <input 
+          type="text"
+          value={context}
+          onChange={(e) => onContextChange(e.target.value)}
+          placeholder="I am a student at a public university..."
+          style={contextInputStyle}
+        />
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+        <label style={fileLabelStyle}>
+          📁 Upload .txt
+          <input ref={fileInputRef} type="file" accept=".txt" onChange={handleFileUpload} style={{ display: 'none' }} />
+        </label>
+        {filename && <span style={{ fontSize: '0.8rem', fontStyle: 'italic' }}>📄 {filename}</span>}
       </div>
 
       <textarea
         className="textarea"
         value={text}
         onChange={(e) => onTextChange(e.target.value)}
-        placeholder="Paste Terms & Conditions here..."
-        style={textareaStyle}
+        placeholder="Paste Terms & Conditions or EULA here..."
+        style={{ marginBottom: '15px' }}
       />
 
-      <div style={footerStyle}>
-        <small>{text.length.toLocaleString()} characters</small>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={handleClear} className="secondary-button">
-            Clear
-          </button>
-          <button
-            className="primary-button"
-            onClick={onAnalyze}
-            disabled={text.trim().length === 0}
-            style={{ 
-              backgroundColor: text.trim().length > 0 ? '#4a90e2' : '#ccc',
-              color: 'white',
-              padding: '8px 16px',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: text.trim().length > 0 ? 'pointer' : 'default'
-            }}
-          >
-            Analyze Policy
-          </button>
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+        <button onClick={onClear} className="secondary-button">Clear</button>
+        <button 
+          className="primary-button" 
+          onClick={onAnalyze} 
+          disabled={text.trim().length === 0}
+        >
+          Analyze Policy
+        </button>
       </div>
     </div>
   );
 }
 
-// --- Styles ---
-const containerStyle: React.CSSProperties = {
-  maxWidth: "800px",
-  margin: "0 auto",
-  padding: "20px",
-  backgroundColor: '#f9f9f9',
-  borderRadius: '12px',
-  boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
-};
-
-const uploadBoxStyle: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  marginBottom: '15px'
+const contextInputStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '12px',
+  borderRadius: '8px',
+  border: '1px solid #e2e8f0',
+  fontSize: '0.95rem',
+  fontFamily: 'inherit',
+  boxSizing: 'border-box'
 };
 
 const fileLabelStyle: React.CSSProperties = {
-  padding: '8px 16px',
-  backgroundColor: '#fff',
-  border: '1px solid #ddd',
+  padding: '6px 12px',
+  backgroundColor: '#f1f5f9',
   borderRadius: '6px',
   cursor: 'pointer',
-  fontSize: '14px'
-};
-
-const filenameStyle: React.CSSProperties = {
-  marginLeft: 12,
-  fontSize: '14px',
-  color: '#666',
-  fontStyle: "italic"
-};
-
-const textareaStyle: React.CSSProperties = {
-  width: "100%",
-  height: "250px",
-  padding: "12px",
-  fontSize: "14px",
-  lineHeight: '1.5',
-  borderRadius: '8px',
-  border: '1px solid #ddd',
-  boxSizing: 'border-box',
-  resize: "vertical",
-  fontFamily: 'inherit'
-};
-
-const footerStyle: React.CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginTop: '10px'
+  fontSize: '0.8rem',
+  fontWeight: 600
 };
