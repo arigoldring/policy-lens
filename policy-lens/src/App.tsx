@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import PolicyInput from "./components/PolicyInput";
 import { normalizeText } from "./utilities/normalize";
 import { chunkText } from "./utilities/chunks";
@@ -38,12 +38,27 @@ function buildOffsetsFromSearch(fullText: string, chunked: string[]) {
 
   return offsets;
 }
+const criticalOptions = [
+  
+  { key: "autoRenewal", label: "Auto-renewals / subscriptions" },
+  { key: "dataCollection", label: "Data collection" },
+  { key: "dataSale", label: "Sale / sharing of data" },
+  { key: "tracking", label: "Tracking / cookies" },
+  { key: "dataRetention", label: "Data retention / deletion" },
+  { key: "userContent", label: "License to your content" },
+  { key: "arbitration", label: "Arbitration / class action waiver" },
+  { key: "liability", label: "Liability waivers" },
+  { key: "unilateralChanges", label: "Company can change terms" },
+  { key: "termination", label: "Termination / bans" },
+  { key: "indemnification", label: "Indemnification" },
+];
 function App() {
   const [currentText, setCurrentText] = useState("");
   const [userContext, setUserContext] = useState("");
   const [lastReceivedText, setLastReceivedText] = useState("");
   const abortRef = useRef<AbortController | null>(null);
-  const controller = new AbortController();
+  const mirrorRef = useRef<HTMLDivElement | null>(null);
+  
   
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [chunks, setChunks] = useState<string[]>([]);
@@ -60,113 +75,107 @@ function App() {
 
   
   const [chunkOffsets, setChunkOffsets] = useState<{start:number; end:number}[]>([]);
-  const criticalOptions = [
+  useEffect(() => {
+  return () => {
+    mirrorRef.current?.remove();
+    mirrorRef.current = null;
+    abortRef.current?.abort(); // optional: cancel request on unmount
+  };
+}, []);
   
-  { key: "autoRenewal", label: "Auto-renewals / subscriptions" },
-  { key: "dataCollection", label: "Data collection" },
-  { key: "dataSale", label: "Sale / sharing of data" },
-  { key: "tracking", label: "Tracking / cookies" },
-  { key: "dataRetention", label: "Data retention / deletion" },
-  { key: "userContent", label: "License to your content" },
-  { key: "arbitration", label: "Arbitration / class action waiver" },
-  { key: "liability", label: "Liability waivers" },
-  { key: "unilateralChanges", label: "Company can change terms" },
-  { key: "termination", label: "Termination / bans" },
-  { key: "indemnification", label: "Indemnification" },
-];
 
   async function handleAnalyze() {
-    if (!currentText.trim()) return;
+  if (!currentText.trim()) return;
 
-    try {
-      setError("");
-      setSummary("");
-      setIsLoading(true);
-      setHasAnalyzed(true);
+  // ✅ cancel old request + create new controller FIRST
+  abortRef.current?.abort();
+  const controller = new AbortController();
+  abortRef.current = controller;
 
-      const chunked = chunkText(currentText);
+  try {
+    setError("");
+    setSummary("");
+    setIsLoading(true);
+    setHasAnalyzed(true);
 
-setChunkOffsets(buildOffsetsFromSearch(currentText, chunked));
-setLastReceivedText(currentText);
+    const chunked = chunkText(currentText);
+    setChunks(chunked); // ✅ if you're tracking chunks
+
+    setChunkOffsets(buildOffsetsFromSearch(currentText, chunked));
+    setLastReceivedText(currentText);
+
+    const keysToScan = selected.length > 0 ? selected : allKeys;
+    const found: Flag[] = keysToScan.flatMap((k) => detectors[k](chunked));
+    setFlags(found);
       
-      abortRef.current?.abort();
-      const keysToScan = selected.length > 0 ? selected : allKeys;
-      const found: Flag[] = keysToScan.flatMap((k) => detectors[k](chunked));
-      setFlags(found);
-
       const flaggedIdxs = Array.from(new Set(found.map((f) => f.chunkIndex)));
-      const contextIdxs = new Set<number>();
-      for (const idx of flaggedIdxs) {
-        contextIdxs.add(idx);
-        if (idx - 1 >= 0) contextIdxs.add(idx - 1);
-        if (idx + 1 < chunked.length) contextIdxs.add(idx + 1);
-      }
-      const orderedIdxs = Array.from(contextIdxs).sort((a, b) => a - b);
-      
+const contextIdxs = new Set<number>();
 
+for (const idx of flaggedIdxs) {
+  contextIdxs.add(idx);
+  if (idx - 1 >= 0) contextIdxs.add(idx - 1);
+  if (idx + 1 < chunked.length) contextIdxs.add(idx + 1);
+}
+
+const orderedIdxs = Array.from(contextIdxs).sort((a, b) => a - b);
       const aiText =
         orderedIdxs.length === 0
           ? currentText
           : orderedIdxs.map((i) => `Segment ${i + 1}\n${chunked[i]}`).join("\n\n---\n\n");
 
       const response = await fetch("http://localhost:3001/api/summarize", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ text: aiText, context: userContext }),
-  signal: controller.signal
-});
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: aiText, context: userContext }),
+      signal: controller.signal,
+    });
 
-      if (!response.ok) throw new Error("Could not connect to the AI server.");
+    if (!response.ok) throw new Error("Could not connect to the AI server.");
 
-      const data = await response.json();
-      console.log("SUMMARY LENGTH:", (data.summary ?? "").length);
-      console.log("SUMMARY END:", (data.summary ?? "").slice(-200));
-      setSummary(data.summary || "No summary was returned.");
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred.");
-    } finally {
-      setIsLoading(false);
-    }
-  }
+    const data = await response.json();
+    setSummary(data.summary || "No summary was returned.");
+  } catch (err: unknown) {
+    if (err instanceof DOMException && err.name === "AbortError") return;
+    setError(err instanceof Error ? err.message : "An unexpected error occurred.");
+  } finally {
+  if (abortRef.current === controller) {
+    setIsLoading(false);
+  }}
+}
   function getCaretPixelTop(textarea: HTMLTextAreaElement, pos: number): number {
   const style = window.getComputedStyle(textarea);
 
-  // Mirror div
-  const div = document.createElement("div");
-  div.style.position = "absolute";
-  div.style.visibility = "hidden";
-  div.style.whiteSpace = "pre-wrap";
-  div.style.wordWrap = "break-word";
-  div.style.overflowWrap = "break-word";
+  let div = mirrorRef.current;
 
-  // Copy the important textarea styles so wrapping matches exactly
+  // Create once
+  if (!div) {
+    div = document.createElement("div");
+    div.style.position = "absolute";
+    div.style.visibility = "hidden";
+    div.style.whiteSpace = "pre-wrap";
+    div.style.wordWrap = "break-word";
+    div.style.overflowWrap = "break-word";
+    document.body.appendChild(div);
+    mirrorRef.current = div;
+  }
+
+  // Update styles each time
   div.style.font = style.font;
-  div.style.fontSize = style.fontSize;
-  div.style.fontFamily = style.fontFamily;
-  div.style.fontWeight = style.fontWeight;
   div.style.letterSpacing = style.letterSpacing;
   div.style.lineHeight = style.lineHeight;
   div.style.padding = style.padding;
   div.style.border = style.border;
   div.style.boxSizing = style.boxSizing;
-
-  // Critical: match textarea width
   div.style.width = `${textarea.clientWidth}px`;
 
-  // Put text up to caret
-  const before = textarea.value.slice(0, pos);
+  div.textContent = textarea.value.slice(0, pos);
 
-  // textarea treats newlines a bit specially; mirror should end with a char
-  div.textContent = before;
-
-  // Caret marker
   const span = document.createElement("span");
-  span.textContent = "\u200b"; // zero-width space
+  span.textContent = "\u200b";
   div.appendChild(span);
 
-  document.body.appendChild(div);
   const top = span.offsetTop;
-  document.body.removeChild(div);
+  span.remove(); // remove only marker
 
   return top;
 }
@@ -174,13 +183,14 @@ setLastReceivedText(currentText);
 function jumpToTextareaChunk(index: number) {
   const ta = textareaRef.current;
   const r = chunkOffsets[index];
+  const HIGHLIGHT_LEN = 120;
   if (!ta || !r) return;
 
   ta.scrollIntoView({ behavior: "smooth", block: "center" });
 
   window.setTimeout(() => {
     ta.focus({ preventScroll: true });
-    ta.setSelectionRange(r.start, r.end);
+    ta.setSelectionRange(r.start, Math.min(r.start + HIGHLIGHT_LEN, ta.value.length));
 
     requestAnimationFrame(() => {
       const caretTop = getCaretPixelTop(ta, r.start);
@@ -209,6 +219,7 @@ function jumpToTextareaChunk(index: number) {
     setError("");
     setChunkOffsets([]);
     setCriticalPrefs([]);
+    abortRef.current?.abort();
   }
 
   return (
@@ -316,9 +327,9 @@ function jumpToTextareaChunk(index: number) {
       )}
 
       <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-        {flags.map((flag, idx) => (
+        {flags.map((flag) => (
           <div
-            key={idx}
+            key={`${flag.chunkIndex}:${flag.category}:${flag.snippet}`}
             onClick={() => jumpToTextareaChunk(flag.chunkIndex)}
             className="cursor-pointer p-5 bg-white border border-rose-100 rounded-2xl shadow-sm hover:border-indigo-500 hover:shadow-md transition"
           >
