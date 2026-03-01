@@ -136,27 +136,27 @@ function App() {
             </section>
 
             {/* AI Insight full width */}
-            {(summary || isLoading || error) && (
-              <section className="lg:col-span-2 bg-white/90 backdrop-blur-xl p-8 rounded-2xl border border-white/30 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05)]">
-                <h2 className="text-[0.9rem] uppercase tracking-[0.1em] text-slate-500 mb-5 border-b border-slate-200 pb-2.5">
-                  AI Insight {userContext ? `for ${userContext}` : ""}
-                </h2>
+            {hasAnalyzed && (
+  <section className="lg:col-span-2 bg-white/90 backdrop-blur-xl p-8 rounded-2xl border border-white/30 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05)]">
+    <h2 className="text-[0.9rem] uppercase tracking-[0.1em] text-slate-500 mb-5 border-b border-slate-200 pb-2.5">
+      AI Insight {userContext ? `for ${userContext}` : ""}
+    </h2>
 
-                {isLoading && (
-                  <div className="text-center font-semibold text-indigo-500 py-5 animate-pulse">
-                    Analyzing policy from your perspective...
-                  </div>
-                )}
+    {isLoading && (
+      <div className="text-center font-semibold text-indigo-500 py-5 animate-pulse">
+        Analyzing policy from your perspective...
+      </div>
+    )}
 
-                {error && <div className="text-rose-600 font-semibold">{error}</div>}
+    {error && <div className="text-rose-600 font-semibold">{error}</div>}
 
-                {summary && (
-                  <div className="whitespace-pre-wrap break-words text-slate-700 leading-8 bg-slate-50/60 p-6 rounded-xl border-l-8 border-indigo-500">
-                    {summary}
-                  </div>
-                )}
-              </section>
-            )}
+    {summary && (
+      <div className="whitespace-pre-wrap break-words text-slate-700 leading-8 bg-slate-50/60 p-6 rounded-xl border-l-8 border-indigo-500">
+        {summary}
+      </div>
+    )}
+  </section>
+)}
 
             {/* Flags full width */}
             <section className="lg:col-span-2 bg-white/90 backdrop-blur-xl p-8 rounded-2xl border border-white/30 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05)]">
