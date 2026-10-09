@@ -1,21 +1,64 @@
-## Inspiration
-We wanted to build something that we believed solves a real problem and could be useful to anyone. Slightly inspired by the South Park episode “humancentipad” where a character blindly accepts the terms and conditions and faces serious consequences, we created an app that helps users better understand what they’re agreeing to.
-## What it does
-PolicyLens allows users to upload a text file or paste a website’s Terms and Conditions directly into the app. Users can select broad categories to scan, such as data sharing/tracking, arbitration clauses , and Liability, and specific issues they may care about such as auto-renewals and copyright policies. The app also includes a context field where users can describe who they are (for example, a student or small business owner), enabling a more applicable and personalized summary based on their situation.
+# PolicyLens
 
-The application then scans the document using keyword detection, flags relevant sections, and displays them in clickable snippets that allow users to jump directly to the corresponding part of the policy. Each flagged section is then analyzed using Google’s Gemini, which generates a simplified structured summary in plain language. 
+A web app that reads Terms of Service so you don't have to. Paste or upload a policy, pick what you care about, and PolicyLens flags the relevant clauses and summarizes each one in plain language with Google Gemini.
+
+Built at **HenHacks 2026** by a 2-person team.
+
+![PolicyLens interface](screenshot.jpg)
+
+## Inspiration
+
+We wanted to build something that solves a real problem and could be useful to anyone. We were partly inspired by the South Park episode "HUMANCENTiPAD", where a character blindly accepts the terms and conditions and faces serious consequences, so we made an app that helps people understand what they're agreeing to.
+
+## What it does
+
+- **Context-aware.** Tell it who you are ("I'm a photographer posting to Pinterest…", "I'm a student", "I run a small business") and the summaries are written for your situation.
+- **Pick your concerns.** Choose broad categories (data sharing and tracking, arbitration, liability) and specific issues (auto-renewals, copyright).
+- **Flags the clauses.** Keyword detection finds the relevant sections and shows them as clickable snippets that jump to the exact spot in the policy.
+- **Plain-language summaries.** Each flagged section is sent to Gemini, which returns a simple, structured summary. Points that match the topics you marked as important are highlighted.
+- **Quick start.** Upload a `.txt` file, paste a policy, or load the Discord, Meta, or Amazon terms with one click.
+- **Chrome extension.** A small companion extension (`manifest.json`, `popup.html`, `background.js`) opens PolicyLens from the browser toolbar.
 
 ## How we built it
-We built PolicyLens using React and TypeScript, adding Tailwind CSS near the end to refine the UI. When a document is submitted, we first normalize and clean the text, then split it into 500-character chunks. For each category we support, we created a list of associated keywords to perform rule-based clause detection. The system scans each chunk against these keyword sets and stores any flagged sections.
-The flagged chunks are then sent to Google’s Gemini API along with a structured prompt. Gemini generates a categorized summary and assigns each bullet point a predefined tag. If a tag matches a topic the user marked as important, that bullet is visually highlighted in the interface, allowing users to immediately see the issues that matter most to them.
+
+1. Submitted text is normalized and split into 500-character chunks.
+2. Each supported category has a list of keywords; every chunk is checked against them, and matches are flagged.
+3. Flagged chunks and the user's context go to a small Express backend (`POST /api/summarize`), which calls Gemini with a structured prompt. The API key stays on the server and never reaches the browser.
+4. Gemini returns categorized bullet points, each with a predefined tag. The frontend highlights the bullets whose tags match the user's selections.
+
+**Stack:** React, TypeScript, Vite, and Tailwind CSS on the frontend; Node.js and Express on the backend; Google Gemini API (`@google/generative-ai`).
+
+## Running locally
+
+Requires Node.js and a [Gemini API key](https://aistudio.google.com/app/apikey).
+
+```bash
+# Backend (runs on port 3001)
+cd server
+npm install
+echo "GEMINI_API_KEY=your-key-here" > .env
+node index.js
+
+# Frontend, in a second terminal from the repo root
+npm install
+npm run dev
+```
+
 ## Challenges we ran into
-We did not originally intend to implement AI integration so we had to restructure part of our architecture to include a backend to secure use the Gemini API key
 
-Styling with CSS ended up being much harder than we expected. It started out simple, but as the project grew, it slowly turned into a mess where even small adjustments became a huge hassle. We eventually decided to pivot to Tailwind, even though neither of us had much experience 
+- **Adding AI mid-project.** We didn't originally plan on an AI integration, so we had to restructure part of the architecture and add a backend to keep the Gemini API key secure.
+- **CSS that got out of hand.** Styling started simple, but as the project grew, even small adjustments became a hassle. We switched to Tailwind partway through, even though neither of us had much experience with it.
+- **Edge cases.** Inconsistent policy formatting, truncated AI responses, and a clear button that didn't always reset everything. Every time we fixed one, two more showed up.
 
-Handling edge cases was an ongoing challenge. Inconsistent policy formatting, truncated AI responses and inconsistent resetting with the clear button just to name a few, it felt like every time we fixed one two more sprung up
-## Accomplishments that we're proud of
-We’re really proud of how the final UI turned out after everything we went through. We even added a bunch of smaller features we didn’t think we’d have time for. Many of them being far more challenging than expected, such as allowing users to click a flagged clause and instantly jump to the exact location in the policy. Seeing those small interactive details come together made the final product feel much more complete and polished which we are proud of.  
+## Accomplishments we're proud of
+
+We're proud of how the final UI turned out, and we added several features we didn't think we'd have time for. Some were much harder than expected, like clicking a flagged clause to jump to its exact location in the policy, but those details are what make the app feel complete.
+
 ## What we learned
-Throughout this project, we learned how to set up and structure a backend using Node.js, including securely integrating and communicating with an LLM through an API, time management, handling merge conflicts, and final tailwind css
-## What's next for PolicyLens
+
+How to set up and structure a Node.js backend, how to integrate an LLM securely through an API, and how to manage time and merge conflicts on a tight deadline. We also got comfortable with Tailwind CSS.
+
+## Team
+
+- **Ariel Goldring** ([@arigoldring](https://github.com/arigoldring)): project setup, input handling, text normalization and chunking, the rule-based clause detection, the Gemini pipeline (sending only flagged chunks, prompt and token tuning), and most of the UI: category menu, jump-to-clause, highlighted critical findings, the Tailwind migration, and the example-policy presets
+- **Valerie** ([@CosmoKittikus](https://github.com/CosmoKittikus)): Chrome extension, Express backend and its Gemini connection (including keeping the API key out of the repo), the user-context field, and a visual design pass
